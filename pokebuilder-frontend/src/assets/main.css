@@ -1,0 +1,135 @@
+:root {
+  --color-paper: #acd5f0;
+  --color-panel: #ecdfbf;
+  --color-panel-raised: #fbf6ea;
+  --color-mint: #3f7d58; /* verde bosque — acento primario */
+  --color-coral: #c1473a; /* rojo baya — acento secundario / CTA */
+  --color-gold: #d9a441; /* dorado — éxito / highlight */
+  --color-text: #2b2118;
+  --color-text-muted: #7c6b54;
+  --color-border: rgba(43, 33, 24, 0.14);
+
+  --color-sky-top: #48aef3;
+  --color-sky-bottom: var(--color-paper);
+  --color-meadow-pale: #8fc08b;
+  --color-meadow: var(--color-mint);
+
+  --font-display: 'Baloo 2', ui-rounded, system-ui, sans-serif;
+  --font-body: 'Nunito Sans', system-ui, sans-serif;
+
+  --radius-lg: 26px;
+  --radius-md: 14px;
+  --radius-pill: 999px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--color-mint);
+  text-decoration: none;
+  font-weight: 700;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  font: inherit;
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-text);
+}
+
+/* Compartido entre LoginView y RegisterView */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-banner {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(193, 71, 58, 0.1);
+  border: 1px solid rgba(193, 71, 58, 0.3);
+  color: #8a3226;
+  font-size: 13.5px;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.form-banner--success {
+  background: rgba(63, 125, 88, 0.1);
+  border-color: rgba(63, 125, 88, 0.3);
+  color: #2c5b3f;
+}
+
+.auth-form__switch {
+  margin: 4px 0 0;
+  font-size: 13.5px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* Compartido entre TeamFormModal y ConfirmDialog */
+.modal-eyebrow {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-coral);
+  margin: 0 0 8px;
+}
+
+.modal-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  margin: 0 0 20px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.modal-actions .btn {
+  width: auto;
+  flex: 1;
+}
+
+.confirm-message {
+  font-size: 14.5px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin: 0 0 22px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
