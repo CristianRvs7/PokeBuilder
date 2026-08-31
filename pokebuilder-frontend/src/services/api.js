@@ -12,6 +12,8 @@ const ERROR_TRANSLATIONS = {
   'Pokemon not found': 'No encontramos ese Pokémon. Revisa el nombre o el número.',
   'Member not found': 'Ese Pokémon ya no está en el equipo.',
   'Error, please check the information': 'Revisa los datos e intenta de nuevo.',
+  'Username already exists': 'Ese nombre de usuario ya está en uso. Prueba con otro.',
+  'Email already exists': 'Ese correo ya tiene una cuenta asociada.',
 }
 
 export class ApiError extends Error {
@@ -85,6 +87,17 @@ export function loginUser({ identifier, password }) {
 export function fetchCurrentUser(token) {
   return request('/test-auth', {
     headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export function updateCurrentUser(token, payload) {
+  return request('/users/me', {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
   })
 }
 

@@ -88,8 +88,8 @@ const displayName = computed(() => {
 }
 
 .roster-slot__sprite {
-  width: 78%;
-  height: 78%;
+  width: 86%;
+  height: 86%;
   object-fit: contain;
   image-rendering: pixelated;
 }

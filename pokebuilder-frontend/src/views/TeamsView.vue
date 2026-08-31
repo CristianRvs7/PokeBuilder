@@ -1,20 +1,24 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { createTeam, deleteTeam, fetchTeams, updateTeam } from '../services/api.js'
+import { createTeam, deleteTeam, fetchTeamMembers, fetchTeams, updateTeam } from '../services/api.js'
 import { useAuth } from '../stores/auth.js'
-import ScanRing from '../components/ScanRing.vue'
+import AppHeader from '../components/AppHeader.vue'
 import AppButton from '../components/AppButton.vue'
-import TeamCard from '../components/TeamCard.vue'
+import TeamListItem from '../components/TeamListItem.vue'
 import TeamFormModal from '../components/TeamFormModal.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 
 const router = useRouter()
-const { state, clearSession } = useAuth()
+const { state } = useAuth()
 
 const teams = ref([])
 const loading = ref(true)
 const loadError = ref('')
+
+// Roster de cada equipo, cargado aparte para no bloquear la lista mientras
+// llegan los sprites (no hay endpoint que devuelva equipos + miembros juntos).
+const membersByTeam = reactive({})
 
 const modal = reactive({ open: false, mode: 'create', team: null, saving: false, error: '' })
 const confirmState = reactive({ open: false, team: null, busy: false, error: '' })
@@ -24,11 +28,22 @@ async function loadTeams() {
   loadError.value = ''
   try {
     teams.value = await fetchTeams(state.token)
+    loadMembersForTeams(teams.value)
   } catch (err) {
     loadError.value = err.detail || 'No pudimos cargar tus equipos.'
   } finally {
     loading.value = false
   }
+}
+
+function loadMembersForTeams(teamList) {
+  teamList.forEach(async (team) => {
+    try {
+      membersByTeam[team.id] = await fetchTeamMembers(state.token, team.id)
+    } catch {
+      membersByTeam[team.id] = []
+    }
+  })
 }
 
 function openCreateModal() {
@@ -56,6 +71,7 @@ async function handleModalSubmit(payload) {
     if (modal.mode === 'create') {
       const created = await createTeam(state.token, payload)
       teams.value = [created, ...teams.value]
+      membersByTeam[created.id] = []
     } else {
       const updated = await updateTeam(state.token, modal.team.id, payload)
       teams.value = teams.value.map((team) => (team.id === updated.id ? updated : team))
@@ -84,6 +100,7 @@ async function handleConfirmDelete() {
   try {
     await deleteTeam(state.token, confirmState.team.id)
     teams.value = teams.value.filter((team) => team.id !== confirmState.team.id)
+    delete membersByTeam[confirmState.team.id]
     confirmState.open = false
   } catch (err) {
     confirmState.error = err.detail || 'No pudimos eliminar el equipo.'
@@ -96,34 +113,21 @@ function goToTeam(id) {
   router.push(`/teams/${id}`)
 }
 
-function handleLogout() {
-  clearSession()
-  router.push('/login')
-}
-
 onMounted(loadTeams)
 </script>
 
 <template>
   <div class="teams-page">
-    <header class="teams-page__header">
-      <div class="teams-page__brand">
-        <ScanRing state="idle" :size="42" />
-        <div>
-          <p class="teams-page__eyebrow">Diario de PokéBuilder</p>
-          <h1 class="teams-page__title">Hola, {{ state.user?.username || 'entrenador' }}</h1>
-        </div>
-      </div>
-      <AppButton type="button" variant="ghost" @click="handleLogout">Cerrar sesión</AppButton>
-    </header>
+    <AppHeader eyebrow="Diario de PokéBuilder" :title="`Hola, ${state.user?.username || 'entrenador'}`">
+      <template #actions>
+        <AppButton type="button" variant="white" @click="openCreateModal">+ Crear equipo</AppButton>
+      </template>
+    </AppHeader>
 
     <main class="teams-page__main">
       <div class="teams-page__toolbar">
-        <div>
-          <h2 class="teams-page__section-title">Tus equipos</h2>
-          <p class="teams-page__section-subtitle">Arma, ajusta y organiza tus builds competitivos.</p>
-        </div>
-        <AppButton type="button" class="teams-page__create" @click="openCreateModal">+ Crear equipo</AppButton>
+        <h2 class="teams-page__section-title">Tus equipos</h2>
+        <p class="teams-page__section-subtitle">Arma, ajusta y organiza tus builds competitivos.</p>
       </div>
 
       <p v-if="loadError" class="form-banner" role="alert">{{ loadError }}</p>
@@ -136,11 +140,13 @@ onMounted(loadTeams)
         <AppButton type="button" @click="openCreateModal">Crear mi primer equipo</AppButton>
       </div>
 
-      <div v-else class="teams-grid">
-        <TeamCard
+      <div v-else class="teams-list">
+        <TeamListItem
           v-for="team in teams"
           :key="team.id"
           :team="team"
+          :members="membersByTeam[team.id] || []"
+          :members-loading="membersByTeam[team.id] === undefined"
           @open="goToTeam(team.id)"
           @edit="openEditModal(team)"
           @delete="openDeleteConfirm(team)"
@@ -177,52 +183,16 @@ onMounted(loadTeams)
   flex-direction: column;
 }
 
-.teams-page__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 24px 40px;
-}
-
-.teams-page__brand {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.teams-page__eyebrow {
-  font-family: var(--font-body);
-  font-weight: 800;
-  font-size: 11.5px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-mint);
-  margin: 0;
-}
-
-.teams-page__title {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 21px;
-  margin: 2px 0 0;
-}
-
 .teams-page__main {
   flex: 1;
   width: 100%;
-  max-width: 1080px;
+  max-width: 880px;
   margin: 0 auto;
-  padding: 12px 40px 64px;
+  padding: 32px 40px 64px;
 }
 
 .teams-page__toolbar {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 28px;
-  flex-wrap: wrap;
+  margin-bottom: 24px;
 }
 
 .teams-page__section-title {
@@ -236,10 +206,6 @@ onMounted(loadTeams)
   margin: 0;
   color: var(--color-text-muted);
   font-size: 14px;
-}
-
-.teams-page__create {
-  width: auto;
 }
 
 .teams-page__state {
@@ -278,14 +244,13 @@ onMounted(loadTeams)
   width: auto;
 }
 
-.teams-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 20px;
+.teams-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 @media (max-width: 640px) {
-  .teams-page__header,
   .teams-page__main {
     padding-left: 20px;
     padding-right: 20px;

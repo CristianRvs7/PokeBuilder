@@ -11,6 +11,7 @@ import {
 } from '../services/api.js'
 import { useAuth } from '../stores/auth.js'
 import AppButton from '../components/AppButton.vue'
+import AppHeader from '../components/AppHeader.vue'
 import TeamFormModal from '../components/TeamFormModal.vue'
 import RosterSlot from '../components/RosterSlot.vue'
 import MemberFormModal from '../components/MemberFormModal.vue'
@@ -142,9 +143,13 @@ onMounted(loadTeam)
 
 <template>
   <div class="team-detail">
-    <div class="team-detail__wrap">
-      <router-link to="/" class="team-detail__back">← Volver a mis equipos</router-link>
+    <AppHeader
+      eyebrow="Diario de PokéBuilder"
+      :title="team ? team.team_name : 'Cargando…'"
+      show-back
+    />
 
+    <div class="team-detail__wrap">
       <p v-if="loadError" class="form-banner" role="alert">{{ loadError }}</p>
       <div v-else-if="loading" class="team-detail__state">Cargando equipo…</div>
 
@@ -218,23 +223,17 @@ onMounted(loadTeam)
 .team-detail {
   min-height: 100vh;
   display: flex;
-  padding: 40px 24px;
+  flex-direction: column;
 }
 
 .team-detail__wrap {
   width: 100%;
   max-width: 720px;
   margin: 0 auto;
+  padding: 32px 24px 40px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-}
-
-.team-detail__back {
-  color: var(--color-text-muted);
-  font-weight: 700;
-  font-size: 14px;
-  align-self: flex-start;
 }
 
 .team-detail__state {
@@ -313,8 +312,8 @@ onMounted(loadTeam)
 .team-detail__slots {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 12px;
-  max-width: 460px;
+  gap: 16px;
+  max-width: 600px;
 }
 
 .team-detail__roster-hint {

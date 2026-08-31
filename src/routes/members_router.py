@@ -81,11 +81,7 @@ def delete_member(team_id : int, member_slot : int, current_user = Depends(get_c
     db.delete(team_member)
     db.commit()
 
-@router.patch(
-    "/{team_id}/member/{member_slot}",
-    response_model=MemberResponse,
-    status_code=200
-)
+@router.patch("/{team_id}/member/{member_slot}",response_model=MemberResponse,status_code=200)
 def team_member_update(team_id: int,member_slot: int,member_new_data: MemberUpdate,current_user=Depends(get_current_user),db: Session=Depends(get_db)):
     team = db.query(Team).filter(Team.user_id == current_user.id,Team.id == team_id).first()
     if not team:

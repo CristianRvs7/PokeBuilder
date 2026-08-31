@@ -58,6 +58,15 @@ defineProps({
   color: var(--color-mint);
 }
 
+.btn--white {
+  background: #ffffff;
+  color: var(--color-mint);
+  box-shadow: 0 4px 14px -6px rgba(20, 30, 45, 0.4);
+}
+.btn--white:hover:not(:disabled) {
+  background: #f2f2f2;
+}
+
 .btn:disabled {
   opacity: 0.75;
   cursor: progress;

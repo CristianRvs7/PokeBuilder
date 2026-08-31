@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from src.models.db_schema import Team, User
+from src.models.db_schema import Team, User, TeamMember
 from src.core.security import get_current_user
 from src.database.db_config import get_db
 from src.schemas.team_schemas import TeamCreate, TeamResponse, TeamUpdate
@@ -20,10 +20,28 @@ def create_team( team_data : TeamCreate, db : Session = Depends(get_db), current
             db.refresh(new_team)
             return new_team
 
-@router.get('/', response_model=list[TeamResponse], status_code=200)
-def get_teams(current_user : User = Depends(get_current_user), db : Session = Depends(get_db)):
-    teams = db.query(Team).filter(Team.user_id == current_user.id).all()
-    return teams
+@router.get("/", status_code=200)
+def get_teams(current_user: User = Depends(get_current_user),db: Session = Depends(get_db)):
+    teams = (db.query(Team).filter(Team.user_id == current_user.id).all())
+    if not teams:
+        return []
+    teams_response = []
+    for team in teams:
+        members = (db.query(TeamMember).filter(TeamMember.team_id == team.id).order_by(TeamMember.slot).all())
+        teams_response.append({
+            "id": team.id,
+            "team_name": team.team_name,
+            "members": [
+                {
+                    "id": member.id,
+                    "pokemon_id": member.pokemon_id,
+                    "pokemon_name": member.pokemon_name,
+                    "slot": member.slot
+                }
+                for member in members
+            ]
+        })
+    return teams_response
 
 @router.get('/{team_id}', response_model=TeamResponse, status_code=200)
 def get_team_by_id(team_id : int, current_user : User = Depends(get_current_user), db : Session = Depends(get_db)):

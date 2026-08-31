@@ -1,17 +1,17 @@
 :root {
-  --color-paper: #acd5f0;
-  --color-panel: #ecdfbf;
+  --color-paper: #a9d8f7;
+  --color-panel: #e8d9ab;
   --color-panel-raised: #fbf6ea;
-  --color-mint: #3f7d58; /* verde bosque — acento primario */
-  --color-coral: #c1473a; /* rojo baya — acento secundario / CTA */
+  --color-mint: #3c8a52; /* verde pradera — acento primario */
+  --color-coral: #c1473a; /* rojo faro — acento secundario / CTA */
   --color-gold: #d9a441; /* dorado — éxito / highlight */
   --color-text: #2b2118;
   --color-text-muted: #7c6b54;
   --color-border: rgba(43, 33, 24, 0.14);
 
-  --color-sky-top: #48aef3;
+  --color-sky-top: #63c2f7;
   --color-sky-bottom: var(--color-paper);
-  --color-meadow-pale: #8fc08b;
+  --color-meadow-pale: #86c17a;
   --color-meadow: var(--color-mint);
 
   --font-display: 'Baloo 2', ui-rounded, system-ui, sans-serif;

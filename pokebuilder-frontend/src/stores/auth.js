@@ -30,11 +30,19 @@ function clearSession() {
   localStorage.removeItem(USER_KEY)
 }
 
+// Actualiza el usuario en cache (por ejemplo tras editar el perfil) sin
+// tocar el token de sesión.
+function updateUser(user) {
+  state.user = user
+  localStorage.setItem(USER_KEY, JSON.stringify(user))
+}
+
 export function useAuth() {
   return {
     state: readonly(state),
     setSession,
     clearSession,
+    updateUser,
     isAuthenticated: () => !!state.token,
   }
 }

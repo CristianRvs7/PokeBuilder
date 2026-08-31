@@ -1,4 +1,4 @@
-from src.schemas.user_schemas import UserResponse, UserCreate
+from src.schemas.user_schemas import UserResponse, UserCreate, UserUpdate
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from src.database.db_config import get_db
@@ -58,4 +58,37 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
 
 @router.get("/test-auth", response_model= UserResponse)
 def test_auth(current_user = Depends(get_current_user)):
+    return current_user
+
+@router.patch("/users/me", response_model=UserResponse)
+def update_user(
+    user_update: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    update_data = user_update.model_dump(exclude_unset=True)
+
+    if "username" in update_data:
+        existing_user = (db.query(User).filter(User.username == update_data["username"],User.id != current_user.id).first())
+        if existing_user:
+            raise HTTPException(
+                status_code=409,
+                detail="Username already exists"
+            )
+
+    if "email" in update_data:
+        existing_email = (db.query(User).filter(User.email == update_data["email"],User.id != current_user.id).first())
+        if existing_email:
+                raise HTTPException(
+                status_code=409,
+                detail="Email already exists"
+            )
+    if "password" in update_data:
+        current_user.password_hash = hash_password(
+            update_data.pop("password")
+        )
+    for field, value in update_data.items():
+        setattr(current_user, field, value)
+    db.commit()
+    db.refresh(current_user)
     return current_user
