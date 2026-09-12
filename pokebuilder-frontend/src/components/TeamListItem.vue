@@ -4,7 +4,6 @@ import { computed } from 'vue'
 const props = defineProps({
   team: { type: Object, required: true },
   members: { type: Array, default: () => [] },
-  membersLoading: { type: Boolean, default: false },
 })
 defineEmits(['open', 'edit', 'delete'])
 
@@ -18,7 +17,7 @@ function spriteUrl(member) {
 <template>
   <article class="team-row">
     <button type="button" class="team-row__body" @click="$emit('open')">
-      <div class="team-row__sprites" :class="{ 'is-loading': membersLoading }">
+      <div class="team-row__sprites">
         <template v-if="sortedMembers.length">
           <span
             v-for="(member, index) in sortedMembers"
@@ -40,7 +39,7 @@ function spriteUrl(member) {
         <p class="team-row__description">{{ team.description || 'Sin descripción todavía.' }}</p>
       </div>
 
-      <span class="team-row__count">{{ membersLoading ? '···' : `${members.length}/6` }}</span>
+      <span class="team-row__count">{{ members.length }}/6</span>
     </button>
 
     <div class="team-row__actions">
@@ -116,10 +115,6 @@ function spriteUrl(member) {
   border-style: dashed;
   border-color: var(--color-border);
   background: var(--color-paper);
-}
-
-.team-row__sprites.is-loading .team-row__sprite--empty {
-  opacity: 0.5;
 }
 
 .team-row__info {

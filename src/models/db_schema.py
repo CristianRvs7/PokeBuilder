@@ -1,5 +1,5 @@
-from src.database.db_config import Base
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Text, CheckConstraint, UniqueConstraint
+from src.database.db_config import Base, engine
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Text, CheckConstraint, UniqueConstraint, Enum   
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -54,14 +54,15 @@ class PokemonMove(Base):
     __tablename__ = 'pokemon_moves'
     id = Column(Integer, primary_key=True, index=True)
     team_member_id = Column(Integer, ForeignKey('team_members.id', ondelete='CASCADE'), nullable=False)
-    move_name = Column(String(50), nullable=False)
+    move_id = Column(Integer, ForeignKey('moves.id'), nullable=False)
     slot = Column(Integer, nullable=False)
     
     team_member = relationship('TeamMember', back_populates='moves')
+    move = relationship("Moves",back_populates="pokemon_moves")
     
     __table_args__ = (CheckConstraint('slot BETWEEN 1 AND 4', name= 'chk_pokemon_move_slot'),
                       UniqueConstraint('team_member_id', 'slot', name='uq_pokemon_move_slot'),
-                      UniqueConstraint('team_member_id', 'move_name', name='uq_pokemon_move'))
+                      UniqueConstraint('team_member_id', 'move_id', name='uq_pokemon_move'))
     
 class PokemonEVs(Base):
     __tablename__ = 'pokemon_evs'
@@ -103,3 +104,22 @@ class PokemonIVs(Base):
                                         AND sp_attack BETWEEN 0 AND 31
                                         AND sp_defense BETWEEN 0 AND 31
                                         AND speed BETWEEN 0 AND 31''', name ='chk_valid_ivs'),)
+    
+
+class Moves(Base):
+    __tablename__ = 'moves'
+    id = Column(Integer, primary_key=True, index=True)
+    pokeapi_id = Column(Integer, nullable=False, unique=True)
+    name = Column(String, nullable=False, unique=True)
+    power = Column(Integer, nullable=True)
+    accuracy = Column(Integer, nullable=True)
+    pp  = Column(Integer, nullable=True)
+    damage_class = Column(Enum('status', 'physical', 'special', name='damage_class_enum'), nullable=False)
+    type = Column(String, nullable=False)
+    description = Column(Text, nullable=False)
+    
+    pokemon_moves = relationship("PokemonMove",back_populates="move")
+    
+if __name__ == "__main__":
+    Base.metadata.create_all(bind=engine)
+    print("Tables created successfully")

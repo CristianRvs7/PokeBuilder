@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends
 from src.services.pokeapi import get_pokemon_from_pokeapi
-from src.models.db_schema import Team, TeamMember
+from src.models.db_schema import Team, TeamMember, PokemonMove
 from src.core.security import get_current_user
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from src.database.db_config import get_db
-from src.schemas.members_schemas import MemberCreate, MemberResponse, MemberUpdate
+from src.schemas.members_schemas import MemberCreate, MemberResponse, MemberUpdate, MemberFullView
 
 router = APIRouter()
 
@@ -99,4 +99,36 @@ def team_member_update(team_id: int,member_slot: int,member_new_data: MemberUpda
         setattr(team_member, field, value)
     db.commit()
     db.refresh(team_member)
-    return team_member 
+    return team_member
+
+@router.get('/{pokemon}', status_code=200, response_model=list[MemberFullView])
+def get_full_pokemon(pokemon : str, team_id : int, current_user = Depends(get_current_user), db : Session = Depends(get_db)):
+    verify_team = db.query(Team).filter(Team.user_id == current_user.id, Team.id == team_id).first()
+    result = []
+    if not verify_team:
+        raise HTTPException(
+            status_code=404,
+            detail='Team not found'
+        )
+    member = db.query(TeamMember).filter(TeamMember.pokemon_name == pokemon, TeamMember.team_id == team_id).first()
+    if not member:
+        raise HTTPException(
+            status_code=404,
+            detail='Pokemon not found in the team'
+        )
+    get_moves = (db.query(PokemonMove).options(joinedload(PokemonMove.move)).filter(PokemonMove.team_member_id == member.id).order_by(PokemonMove.slot).all())
+    move_names = [m.move.name for m in get_moves]
+    member_data = MemberFullView(
+            pokemon_name=member.pokemon_name,
+            slot=member.slot,
+            nature=member.nature,
+            ability=member.ability,
+            item=member.item,
+            movslot1=move_names[0] if len(move_names) > 0 else None,
+            movslot2=move_names[1] if len(move_names) > 1 else None,
+            movslot3=move_names[2] if len(move_names) > 2 else None,
+            movslot4=move_names[3] if len(move_names) > 3 else None,
+        )
+        
+    result.append(member_data)
+    return result

@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { createTeam, deleteTeam, fetchTeamMembers, fetchTeams, updateTeam } from '../services/api.js'
+import { createTeam, deleteTeam, fetchTeams, updateTeam } from '../services/api.js'
 import { useAuth } from '../stores/auth.js'
 import AppHeader from '../components/AppHeader.vue'
 import AppButton from '../components/AppButton.vue'
@@ -16,10 +16,6 @@ const teams = ref([])
 const loading = ref(true)
 const loadError = ref('')
 
-// Roster de cada equipo, cargado aparte para no bloquear la lista mientras
-// llegan los sprites (no hay endpoint que devuelva equipos + miembros juntos).
-const membersByTeam = reactive({})
-
 const modal = reactive({ open: false, mode: 'create', team: null, saving: false, error: '' })
 const confirmState = reactive({ open: false, team: null, busy: false, error: '' })
 
@@ -27,23 +23,14 @@ async function loadTeams() {
   loading.value = true
   loadError.value = ''
   try {
+    // GET /teams/ ya devuelve cada equipo con sus miembros embebidos,
+    // así que no hace falta un fetch extra por equipo para los sprites.
     teams.value = await fetchTeams(state.token)
-    loadMembersForTeams(teams.value)
   } catch (err) {
     loadError.value = err.detail || 'No pudimos cargar tus equipos.'
   } finally {
     loading.value = false
   }
-}
-
-function loadMembersForTeams(teamList) {
-  teamList.forEach(async (team) => {
-    try {
-      membersByTeam[team.id] = await fetchTeamMembers(state.token, team.id)
-    } catch {
-      membersByTeam[team.id] = []
-    }
-  })
 }
 
 function openCreateModal() {
@@ -69,12 +56,17 @@ async function handleModalSubmit(payload) {
   modal.error = ''
   try {
     if (modal.mode === 'create') {
+      // POST /teams/create responde con TeamResponse (sin "members"), así
+      // que lo completamos en el cliente para que TeamListItem no truene.
       const created = await createTeam(state.token, payload)
-      teams.value = [created, ...teams.value]
-      membersByTeam[created.id] = []
+      teams.value = [{ ...created, members: [] }, ...teams.value]
     } else {
+      // PATCH /teams/edit/{id} tampoco trae "members"; conservamos los que
+      // ya teníamos cargados para ese equipo.
       const updated = await updateTeam(state.token, modal.team.id, payload)
-      teams.value = teams.value.map((team) => (team.id === updated.id ? updated : team))
+      teams.value = teams.value.map((team) =>
+        team.id === updated.id ? { ...updated, members: team.members } : team,
+      )
     }
     modal.open = false
   } catch (err) {
@@ -100,7 +92,6 @@ async function handleConfirmDelete() {
   try {
     await deleteTeam(state.token, confirmState.team.id)
     teams.value = teams.value.filter((team) => team.id !== confirmState.team.id)
-    delete membersByTeam[confirmState.team.id]
     confirmState.open = false
   } catch (err) {
     confirmState.error = err.detail || 'No pudimos eliminar el equipo.'
@@ -145,8 +136,7 @@ onMounted(loadTeams)
           v-for="team in teams"
           :key="team.id"
           :team="team"
-          :members="membersByTeam[team.id] || []"
-          :members-loading="membersByTeam[team.id] === undefined"
+          :members="team.members || []"
           @open="goToTeam(team.id)"
           @edit="openEditModal(team)"
           @delete="openDeleteConfirm(team)"

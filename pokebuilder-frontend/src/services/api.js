@@ -190,3 +190,43 @@ export function deleteTeamMember(token, teamId, slot) {
     headers: { Authorization: `Bearer ${token}` },
   })
 }
+
+// --- Movimientos ---
+// Nota: /moves/all y /moves/{pokemon} son públicos (no piden token).
+// El detalle de miembro con movimientos vive en members_router sin prefix,
+// como get_full_pokemon: GET /{pokemon}?team_id=... (mismo patrón "sin /teams"
+// que el resto de members_router, ver nota arriba).
+
+export function searchMoves(query) {
+  const params = query ? `?search=${encodeURIComponent(query)}` : ''
+  return request(`/moves/all${params}`)
+}
+
+// Movimientos que el Pokémon puede aprender según PokeAPI Y que ya existen
+// en nuestra tabla moves (seed_moves.py). Devuelve el set completo, no solo
+// el aprendido: se filtra en el cliente mientras el usuario busca.
+export function fetchLearnableMoves(pokemonName) {
+  return request(`/moves/${encodeURIComponent(pokemonName.trim().toLowerCase())}`)
+}
+
+export function assignMoveToMember(token, { team_member_id, move_id, slot }) {
+  return request('/moves/create', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ team_member_id, move_id, slot }),
+  })
+}
+
+// Devuelve el miembro con sus movimientos asignados (movslot1..4, solo el
+// nombre). El backend responde una lista de un elemento; nos quedamos con
+// el primero.
+export async function fetchMemberWithMoves(token, teamId, pokemonName) {
+  const result = await request(
+    `/${encodeURIComponent(pokemonName.trim().toLowerCase())}?team_id=${teamId}`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  )
+  return Array.isArray(result) ? result[0] : result
+}

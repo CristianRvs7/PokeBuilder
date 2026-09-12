@@ -197,6 +197,7 @@ onMounted(loadTeam)
     <MemberFormModal
       v-if="memberModal.open"
       :mode="memberModal.mode"
+      :team-id="teamId"
       :slot-number="memberModal.slotNumber"
       :member="memberModal.member"
       :saving="memberModal.saving"

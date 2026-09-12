@@ -26,3 +26,21 @@ def get_pokemon_from_pokeapi(name_or_id: str):
         ],
         "sprite": pokemon["sprites"]["front_default"]
     }
+    
+def get_pokemon_moves_from_pokeapi(name_or_id: str):
+    value = str(name_or_id).lower()
+    url = f"https://pokeapi.co/api/v2/pokemon/{value}"
+    response = httpx.get(url, timeout=30)
+    if response.status_code == 404:
+        return None
+    response.raise_for_status()
+    pokemon = response.json()
+    moves = [
+        move_info["move"]["name"]
+        for move_info in pokemon["moves"]
+    ]
+    return {
+        "pokemon_id": pokemon["id"],
+        "pokemon_name": pokemon["name"],
+        "moves": moves
+    }

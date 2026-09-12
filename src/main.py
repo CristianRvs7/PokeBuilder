@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from src.routes import auth_routes, team_routes, members_router
+from src.routes import auth_routes, team_routes, members_router, moves_routes
 
 app = FastAPI(
     title='PokeBuilder! :)',
@@ -20,3 +20,4 @@ app.add_middleware(
 app.include_router(auth_routes.router)
 app.include_router(team_routes.router)
 app.include_router(members_router.router)
+app.include_router(moves_routes.router)

@@ -31,6 +31,9 @@ def get_teams(current_user: User = Depends(get_current_user),db: Session = Depen
         teams_response.append({
             "id": team.id,
             "team_name": team.team_name,
+            "description": team.description,
+            "format": team.format,
+            "created_at": team.created_at,
             "members": [
                 {
                     "id": member.id,

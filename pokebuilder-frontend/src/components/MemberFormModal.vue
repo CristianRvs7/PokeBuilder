@@ -3,10 +3,12 @@ import { computed, reactive, ref } from 'vue'
 import ModalBase from './ModalBase.vue'
 import AppInput from './AppInput.vue'
 import AppButton from './AppButton.vue'
+import MemberMovesetEditor from './MemberMovesetEditor.vue'
 import { searchPokemon } from '../services/api.js'
 
 const props = defineProps({
   mode: { type: String, default: 'create' }, // create | edit
+  teamId: { type: [String, Number], default: null },
   slotNumber: { type: Number, required: true },
   member: { type: Object, default: null },
   saving: { type: Boolean, default: false },
@@ -167,6 +169,8 @@ const spriteUrl = computed(() => pokemon.value?.sprite || '')
           </AppButton>
         </div>
       </form>
+
+      <MemberMovesetEditor v-if="mode === 'edit' && member" :team-id="teamId" :member="member" />
 
       <div v-if="mode === 'edit'" class="member-danger">
         <button type="button" class="member-danger__btn" @click="$emit('remove')">
