@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DB_URL = os.getenv("DATABASE_URL")
+if DB_URL and DB_URL.startswith("postgresql://"):
+    DB_URL = DB_URL.replace("postgresql://", "postgresql+psycopg://", 1)
 
 engine = create_engine(DB_URL)
 
