@@ -4,6 +4,13 @@ PokeBuilder es una aplicación web para crear, organizar y administrar equipos d
 
 El proyecto utiliza una API REST desarrollada con FastAPI, PostgreSQL y SQLAlchemy, protegida mediante autenticación JWT con OAuth2. La interfaz está construida con Vue y Vite, y los datos de Pokémon se consultan desde [PokeAPI](https://pokeapi.co/).
 
+## Demo en vivo
+
+- **Aplicación:** https://pokebuilder-frontend.onrender.com
+- **API / Documentación interactiva (Swagger):** https://pokebuilder-2dvs.onrender.com/docs
+
+> El backend corre en el plan gratuito de Render. Si nadie lo ha usado en los últimos 15 minutos, la primera petición puede tardar 30-60 segundos en responder mientras el servicio "despierta". Las siguientes son instantáneas.
+
 ## Funcionalidades
 
 - Registro e inicio de sesión de usuarios.
@@ -33,6 +40,11 @@ El proyecto utiliza una API REST desarrollada con FastAPI, PostgreSQL y SQLAlche
 - Vite
 - JavaScript
 - npm
+
+### Despliegue
+
+- Render (backend y frontend)
+- Neon (PostgreSQL serverless)
 
 ### Servicio externo
 
@@ -202,7 +214,7 @@ La especificación actualizada puede consultarse en `/docs` mientras el backend 
 
 ## Estado del proyecto
 
-PokeBuilder se encuentra en desarrollo. Las funciones principales de autenticación y gestión de equipos forman parte del alcance actual, pero la estructura, los endpoints y la interfaz pueden cambiar durante su evolución.
+PokeBuilder está desplegado y en funcionamiento (backend y frontend en Render, base de datos en Neon). El proyecto sigue en desarrollo activo: la autenticación y la gestión de equipos ya están operativas, pero la estructura, los endpoints y la interfaz pueden seguir cambiando conforme avance.
 
 ## Futuras mejoras
 
