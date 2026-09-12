@@ -11,7 +11,7 @@ app = FastAPI(
 # desde el navegador. Agrega aqui otros origenes si despliegas en otro dominio.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['http://localhost:5173'],
+    allow_origins=['http://localhost:5173', 'https://pokebuilder-frontend.onrender.com'],
     allow_credentials=True,
     allow_methods=['*'],
     allow_headers=['*'],
